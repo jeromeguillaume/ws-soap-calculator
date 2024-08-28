@@ -11,7 +11,8 @@ Following endpoints are available:
 
 The build is done with Maven
 
-## Build and Run the SOAP/XML Web Service
+## Build and Run
+### Build the SOAP/XML Web Service with Maven
 Run the application with:
 ```sh
 ./mvnw spring-boot:run
@@ -24,6 +25,24 @@ Build the JAR file with:
 and then run the JAR file, as follows:
 ```sh
 java -jar target/ws.calculator-1.0.0.jar
+```
+
+### Build a Docker image
+- Build and Push the Docker image for linux/arm64 and linux/amd64
+```sh
+cd ws-soap-calculator
+docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.0 .
+```
+
+### Run the Docker image
+```sh
+docker compose up --build
+```
+or
+---
+```sh
+docker run -d --name ws-soap-calulator -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.0
 ```
 
 ## Test
