@@ -9,13 +9,48 @@
     </xs:complexType>
   </xs:element>
 
-<xs:element name="AddResponse">
+  <xs:element name="AddResponse">
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" name="AddResult" type="xs:int" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="Divide">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="intA" type="xs:int" />
+        <xs:element minOccurs="0" name="intB" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="DivideResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="DivideResult" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Multiply">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="intA" type="xs:int" />
+        <xs:element minOccurs="0" name="intB" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="MultiplyResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="MultiplyResult" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
   <xs:element name="Subtract">
     <xs:complexType>
       <xs:sequence>
@@ -24,6 +59,7 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
   <xs:element name="SubtractResponse">
     <xs:complexType>
       <xs:sequence>
@@ -31,5 +67,5 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  
+
 </xs:schema>

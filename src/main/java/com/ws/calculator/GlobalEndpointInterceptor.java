@@ -33,22 +33,26 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
   @Override
   public void afterCompletion(MessageContext messageContext, Object o, Exception e) throws Exception {
     try {
-        SOAPMessage soapMessage = ((SaajSoapMessage) messageContext.getResponse()).getSaajMessage();
-        SOAPHeader header = soapMessage.getSOAPHeader();
-        SOAPBody body = soapMessage.getSOAPBody();
+        SOAPMessage  soapMessage = ((SaajSoapMessage) messageContext.getResponse()).getSaajMessage();
+        SOAPPart     soappart     = soapMessage.getSOAPPart();
+        SOAPEnvelope soapenvelope = soappart.getEnvelope();
+        SOAPHeader   header       = soapMessage.getSOAPHeader();
+        SOAPBody     body         = soapMessage.getSOAPBody();
+        
         // Inject the XML declaration (ie. <?xml version="1.0" encoding="utf-8" ?>)
         soapMessage.setProperty(SOAPMessage.WRITE_XML_DECLARATION, "true");
-        SOAPPart soappart = soapMessage.getSOAPPart();
-        
-        SOAPEnvelope soapenvelope = soappart.getEnvelope ();
-        soapenvelope.setPrefix("soap");
-        soapenvelope.removeNamespaceDeclaration("SOAP-ENV");
-        //soapenvelope.addNamespaceDeclaration("xsd", "http://www.w3.org/2001/XMLSchema");
-        //soapenvelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        
-        // Remove Header
+
+        // Remove the SOAP Header
         header.detachNode();
         
+        // Replace '<SOAP-ENV:Envelope' by '<soap:Envelope'
+        soapenvelope.setPrefix("soap");
+        soapenvelope.removeNamespaceDeclaration("SOAP-ENV");
+        // Add 'xmlns:xsd=...' and 'xmlns:xsi=...'
+        soapenvelope.addNamespaceDeclaration("xsd", "http://www.w3.org/2001/XMLSchema");
+        soapenvelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        
+        // Remove <ns2: and <ns3: namespace prefix
         body.setPrefix("soap");
         Iterator<Node> it = body.getChildElements();
         while (it.hasNext()) {
