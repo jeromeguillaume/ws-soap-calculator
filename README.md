@@ -12,11 +12,12 @@ Following endpoints are available:
 The build is done with Maven
 
 ## Build and Run with Maven
-Run the application with:
+Build & Run the application with:
 ```sh
 ./mvnw spring-boot:run
 ```
-
+or
+---
 Build the JAR file with:
 ```sh
 ./mvnw clean package
