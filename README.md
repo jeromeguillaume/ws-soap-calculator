@@ -28,7 +28,7 @@ java -jar target/ws.calculator-1.0.0.jar
 ```
 
 ## Build and Run with Docker
-- Build and Push the Docker image for linux/arm64 and linux/amd64
+### Build and Push the Docker image for linux/arm64 and linux/amd64
 ```sh
 cd ws-soap-calculator
 docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
