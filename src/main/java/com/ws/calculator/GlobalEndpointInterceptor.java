@@ -3,6 +3,8 @@ package com.ws.calculator;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointInterceptor;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
+import org.springframework.ws.transport.context.TransportContextHolder;
+import org.springframework.ws.transport.http.HttpServletConnection;
 
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPBodyElement;
@@ -11,10 +13,20 @@ import jakarta.xml.soap.SOAPEnvelope;
 import jakarta.xml.soap.SOAPPart;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPException;
+
+import java.net.InetAddress;
 import java.util.Iterator;
+
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.soap.Node;
 
+import java.net.UnknownHostException;
+
 public class GlobalEndpointInterceptor implements EndpointInterceptor {
+  
+  String envRegion   = "X_SOAP_REGION";
+  String headerRegion = "X-SOAP-Region";
+
   @Override
   public boolean handleRequest(MessageContext messageContext, Object o) throws Exception {
       return true;
@@ -81,9 +93,38 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
                 }
             }
         }
+
+        var transportContext = TransportContextHolder.getTransportContext();
+        if (transportContext != null) {
+            // Access the HttpServletConnection from the transport context
+            HttpServletConnection connection = (HttpServletConnection) transportContext.getConnection();
+
+            if (connection != null) {
+                // Retrieve the HTTP servlet response
+                HttpServletResponse response = connection.getHttpServletResponse();
+
+                // Retrieve the environment variable by name
+                String headerRegionValue = System.getenv(envRegion);
+                if (headerRegionValue == null){
+                    // Get the local host address (the machine the Java program is running on)
+                    InetAddress inetAddress = InetAddress.getLocalHost();                    
+                    // Retrieve the hostname
+                    headerRegionValue = inetAddress.getHostName();                  
+                }
+                if (headerRegionValue == null){
+                  headerRegionValue = "default";
+                }
+                // Add custom header
+                response.addHeader(headerRegion, headerRegionValue);
+
+            }
+        }
+
     } catch (SOAPException soapException) {
         // Handle SOAPException
         throw new Exception("SOAPException occurred", soapException);
+    } catch (UnknownHostException hostException) {
+      throw new Exception("SOAPException occurred", hostException);
     }
   }
 }

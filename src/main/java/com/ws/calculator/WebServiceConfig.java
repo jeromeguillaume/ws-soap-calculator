@@ -21,7 +21,7 @@ public class WebServiceConfig extends WsConfigurerAdapter {
 	@Override
   public void addInterceptors(List<EndpointInterceptor> interceptors) {
       interceptors.add(new GlobalEndpointInterceptor());
-  }
+			}
 
 	@Bean
 	public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext applicationContext) {

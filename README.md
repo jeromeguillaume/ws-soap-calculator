@@ -9,6 +9,8 @@ Following endpoints are available:
 - `Multiply`
 - `Subtract`
 
+An `X-SOAP-Region` http response header is added. The value is set with the value of `X_SOAP_REGION` environment variable declared in Tomcat container
+
 The build is done with Maven
 
 ## Build and Run with Maven
@@ -32,7 +34,7 @@ java -jar target/ws.calculator-1.0.0.jar
 ```sh
 cd ws-soap-calculator
 docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.0 .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.1 .
 ```
 
 ### Run the Docker image
@@ -42,7 +44,7 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calulator -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.0
+docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.1
 ```
 
 ## Test
@@ -64,6 +66,7 @@ Content-Type:"text/xml; charset=utf-8" \
 Response:
 ```xml
 HTTP/1.1 200
+X-SOAP-Region: soap1
 ...
 <?xml version="1.0" encoding="utf-8" ?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
