@@ -9,7 +9,7 @@ Following endpoints are available:
 - `Multiply`
 - `Subtract`
 
-An `X-SOAP-Region` http response header is added. The value is set with the value of `X_SOAP_REGION` environment variable declared in Tomcat container
+An `X-SOAP-Region` http response header is added. The value is retrieved from the `X_SOAP_REGION` environment variable declared in Tomcat container
 
 The build is done with Maven
 
