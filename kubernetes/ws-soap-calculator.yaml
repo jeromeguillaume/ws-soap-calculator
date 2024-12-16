@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ws-soap-calculator
+  name: ws-soap-calculator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ws-soap-calculator
+  template:
+    metadata:
+      labels:
+        app: ws-soap-calculator
+    spec:
+      containers:
+      - image: jeromeguillaume/ws-soap-calculator:1.0.1
+        name: ws-soap-calculator
+        ports:
+        - containerPort: 8080
+        env:
+        - name: X_SOAP_REGION
+          value: soap1.apim.eu
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ws-soap-calculator
+  name: ws-soap-calculator
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: ws-soap-calculator
+  type: LoadBalancer
