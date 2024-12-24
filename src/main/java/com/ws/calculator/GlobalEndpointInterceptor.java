@@ -2,6 +2,7 @@ package com.ws.calculator;
 
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointInterceptor;
+import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 import org.springframework.ws.transport.context.TransportContextHolder;
 import org.springframework.ws.transport.http.HttpServletConnection;
@@ -29,7 +30,18 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
 
   @Override
   public boolean handleRequest(MessageContext messageContext, Object o) throws Exception {
-      return true;
+    if (messageContext.getRequest() instanceof SoapMessage) {
+    SoapMessage soapMessage = (SoapMessage) messageContext.getRequest();
+    String soapAction = soapMessage.getSoapAction();
+    if (soapAction == null || soapAction == "\"\"") {
+        System.out.println("SOAPAction is null");
+        throw new Exception ("SOAPAction is null");
+    } else {
+        System.out.println("SOAPAction: " + soapAction);
+    }
+}
+
+    return true; // Continue processing
   }
 
   @Override
