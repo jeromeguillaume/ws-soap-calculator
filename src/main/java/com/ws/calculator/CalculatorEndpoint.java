@@ -4,7 +4,6 @@ import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
-import org.springframework.ws.soap.addressing.server.annotation.Action;
 import org.tempuri.AddResponse;
 import org.tempuri.Add;
 import org.tempuri.DivideResponse;
@@ -18,7 +17,6 @@ import org.tempuri.Subtract;
 public class CalculatorEndpoint {
   protected static final String NAMESPACE_URI = "http://tempuri.org/";
 
-	@Action(NAMESPACE_URI + "Add")
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "Add")
 	@ResponsePayload
 	public AddResponse addResponse(@RequestPayload Add request) {
@@ -29,7 +27,6 @@ public class CalculatorEndpoint {
 		return response;
 	}
 
-	@Action(NAMESPACE_URI + "Divide")
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "Divide")
 	@ResponsePayload
 	public DivideResponse divideResponse(@RequestPayload Divide request) {
@@ -39,7 +36,6 @@ public class CalculatorEndpoint {
 		return response;
 	}
 
-	@Action(NAMESPACE_URI + "Multiply")
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "Multiply")
 	@ResponsePayload
 	public MultiplyResponse multiplyResponse(@RequestPayload Multiply request) {
@@ -49,7 +45,6 @@ public class CalculatorEndpoint {
 		return response;
 	}
 
-	@Action(NAMESPACE_URI + "Subtract")
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "Subtract")
 	@ResponsePayload
 	public SubtractResponse subtractResponse(@RequestPayload Subtract request) {

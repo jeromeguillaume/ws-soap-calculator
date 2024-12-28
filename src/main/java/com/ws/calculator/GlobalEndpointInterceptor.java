@@ -1,45 +1,141 @@
 package com.ws.calculator;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.Locale;
+
+import javax.xml.namespace.QName;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointInterceptor;
+import org.springframework.ws.soap.SoapBody;
+import org.springframework.ws.soap.SoapEnvelope;
+import org.springframework.ws.soap.SoapFault;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 import org.springframework.ws.transport.context.TransportContextHolder;
 import org.springframework.ws.transport.http.HttpServletConnection;
 
-import jakarta.xml.soap.SOAPBody;
-import jakarta.xml.soap.SOAPBodyElement;
-import jakarta.xml.soap.SOAPHeader;
-import jakarta.xml.soap.SOAPEnvelope;
-import jakarta.xml.soap.SOAPPart;
-import jakarta.xml.soap.SOAPMessage;
-import jakarta.xml.soap.SOAPException;
-
-import java.net.InetAddress;
-import java.util.Iterator;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.soap.Node;
-
-import java.net.UnknownHostException;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPBodyElement;
+import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPFault;
+import jakarta.xml.soap.SOAPHeader;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPPart;
+import jakarta.xml.soap.Detail;
+import jakarta.xml.soap.DetailEntry;
+import jakarta.xml.soap.MessageFactory;
 
 public class GlobalEndpointInterceptor implements EndpointInterceptor {
   
-  String envRegion   = "X_SOAP_REGION";
-  String headerRegion = "X-SOAP-Region";
+  private String    envRegion      = "X_SOAP_REGION";
+  private String    headerRegion   = "X-SOAP-Region";
+  private Integer   soap11         = 11;
+  private Integer   soap12         = 12;
 
-  @Override
-  public boolean handleRequest(MessageContext messageContext, Object o) throws Exception {
-    if (messageContext.getRequest() instanceof SoapMessage) {
-    SoapMessage soapMessage = (SoapMessage) messageContext.getRequest();
-    String soapAction = soapMessage.getSoapAction();
-    if (soapAction == null || soapAction == "\"\"") {
-        System.out.println("SOAPAction is null");
-        throw new Exception ("SOAPAction is null");
-    } else {
-        System.out.println("SOAPAction: " + soapAction);
+  private void createCustomSoapFault(MessageContext messageContext, String faultDetail) throws SOAPException {
+    SoapMessage soapMessage = (SoapMessage) messageContext.getResponse();
+
+    if (soapMessage != null) {
+        // Get the SOAPBody from the SoapMessage
+        SoapBody soapBody = soapMessage.getSoapBody();
+
+        soapBody.addClientOrSenderFault(faultDetail, Locale.ENGLISH);        
     }
 }
+  @Override
+  public boolean handleRequest(MessageContext messageContext, Object o) throws Exception {
+    String soapAction = null;
+    String header = "";
+    Integer soapVersion = 0;
+    var transportContext = TransportContextHolder.getTransportContext();
+    if (transportContext != null) {
+        // Access the HttpServletConnection from the transport context
+        HttpServletConnection connection = (HttpServletConnection) transportContext.getConnection();
+
+        if (connection != null) {
+            // Retrieve the HTTP servlet response
+            Iterator<String> headers = connection.getRequestHeaders(HttpHeaders.CONTENT_TYPE);
+            while (headers.hasNext())
+            {
+                header = headers.next();
+                if (header.contains(MimeTypeUtils.TEXT_XML_VALUE)){
+                    soapVersion = soap11;
+                }
+                else if (header.contains("application/soap+xml")){
+                    soapVersion = soap12;
+                }
+                else {
+                    throw new Exception ("Invalid content-type");
+                }
+            }
+        }
+    }
+    if (messageContext.getRequest() instanceof SoapMessage) {
+        
+        if (soapVersion == soap11)
+        {
+            SoapMessage soapMessage = (SoapMessage) messageContext.getRequest();
+            soapAction = soapMessage.getSoapAction();
+            
+            if (soapAction == null || soapAction == "\"\"") {
+                soapAction = null;
+            }
+        }
+        else if (soapVersion == soap12){
+            String [] contents = header.split(";");
+            for (String content : contents){
+                if (content.contains ("action")){
+                    String [] action = content.split("=\"");
+                    if (action != null && action.length == 2){
+                        soapAction = action[1];
+                        // Remove last "
+                        char lastCharacter = soapAction.charAt(soapAction.length() - 1);
+                        if (lastCharacter == '"') {
+                            soapAction = soapAction.substring(0, soapAction.length() - 1);
+                        }
+                    break;
+                    }
+                }
+            }
+        }
+        else{
+            throw new Exception ("Unable to detect the SOAP Version");
+        }
+    }
+
+    if (soapAction != null){
+        SOAPMessage  soapMessage = ((SaajSoapMessage) messageContext.getRequest()).getSaajMessage();
+        SOAPBody     body         = soapMessage.getSOAPBody();
+        Iterator<Node> it = body.getChildElements();
+        String [] actions = soapAction.split("/");
+        String actionFromHeader = null;
+        if (actions.length > 1){
+            actionFromHeader = actions[actions.length-1];
+        }
+        Boolean soapActionChecked = false;
+        while (it.hasNext() && !soapActionChecked) {
+            Node node = it.next();
+            if ( node.getNodeName().equals(actionFromHeader) ){
+                if ( (CalculatorEndpoint.NAMESPACE_URI + node.getNodeName()).equals(soapAction)){
+                    soapActionChecked = true;
+                }
+            }
+        }
+        if (!soapActionChecked){
+            createCustomSoapFault(messageContext, "SOAP Action is not valid");
+            
+            return false;
+            //throw new Exception ("Invalid SOAP Action");
+        }
+    }
 
     return true; // Continue processing
   }

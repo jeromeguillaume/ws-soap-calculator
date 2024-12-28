@@ -13,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.ws.InvalidXmlException;
 import org.springframework.ws.soap.SoapMessageCreationException;
 import org.springframework.ws.soap.SoapMessageFactory;
@@ -95,50 +94,32 @@ public class DualProtocolSaajSoapMessageFactory implements SoapMessageFactory, I
   
   @Override
   public SaajSoapMessage createWebServiceMessage(InputStream inputStream) throws IOException {
-      MimeHeaders mimeHeaders = this.parseMimeHeaders(inputStream);
-      try {
-          inputStream = checkForUtf8ByteOrderMark(inputStream);
-          SOAPMessage saajMessage = null;
-          if (mimeHeaders.getHeader(HttpHeaders.CONTENT_TYPE)[0].contains(MimeTypeUtils.TEXT_XML_VALUE)) {
-              saajMessage = messageFactory11.createMessage(mimeHeaders, inputStream);
-              threadLocalValue.set(messageFactory11);
-          } else {
-              saajMessage = messageFactory12.createMessage(mimeHeaders, inputStream);
-              threadLocalValue.set(messageFactory12);
-          }
-  
-          saajMessage.getSOAPPart().getEnvelope();
-          this.postProcess(saajMessage);
-          return new SaajSoapMessage(saajMessage, this.langAttributeOnSoap11FaultString, getMessageFactoryThreadLocal());
-      } catch (SOAPException var7) {
-          String contentType = StringUtils.arrayToCommaDelimitedString(mimeHeaders.getHeader("Content-Type"));
-          if (contentType.contains("startinfo")) {
-              contentType = contentType.replace("startinfo", "start-info");
-              mimeHeaders.setHeader("Content-Type", contentType);
-  
-              try {
-                  SOAPMessage saajMessage = getMessageFactoryThreadLocal().createMessage(mimeHeaders, inputStream);
-                  this.postProcess(saajMessage);
-                  return new SaajSoapMessage(saajMessage, this.langAttributeOnSoap11FaultString);
-              } catch (SOAPException var6) {
-              }
-          }
-  
-          SAXParseException parseException = this.getSAXParseException(var7);
-          if (parseException != null) {
-              throw new InvalidXmlException("Could not parse XML", parseException);
-          } else {
-              throw new SoapMessageCreationException("Could not create message from InputStream: " + var7.getMessage(), var7);
-          }
-      }
-  }
-  
-  private SAXParseException getSAXParseException(Throwable ex) {
-      if (ex instanceof SAXParseException) {
-          return (SAXParseException) ex;
-      } else {
-          return ex.getCause() != null ? this.getSAXParseException(ex.getCause()) : null;
-      }
+    MimeHeaders mimeHeaders = this.parseMimeHeaders(inputStream);
+    try {
+        inputStream = checkForUtf8ByteOrderMark(inputStream);
+        SOAPMessage saajMessage = null;
+        // Content-Type = application/soap+xml
+        if (mimeHeaders.getHeader(HttpHeaders.CONTENT_TYPE)[0].contains("application/soap+xml")){
+            saajMessage = messageFactory12.createMessage(mimeHeaders, inputStream);
+            threadLocalValue.set(messageFactory12);
+        }
+        // Content-Type = text/xml
+        else if (mimeHeaders.getHeader(HttpHeaders.CONTENT_TYPE)[0].contains(MimeTypeUtils.TEXT_XML_VALUE)){
+            saajMessage = messageFactory11.createMessage(mimeHeaders, inputStream);
+            threadLocalValue.set(messageFactory11);
+        }
+        // Unknown Content-Type
+        else{
+           throw new SOAPException ("Invalid Content-type");
+        }
+
+        saajMessage.getSOAPPart().getEnvelope();
+        this.postProcess(saajMessage);
+        return new SaajSoapMessage(saajMessage, this.langAttributeOnSoap11FaultString, getMessageFactoryThreadLocal());
+    }
+    catch (SOAPException exception) {
+        throw new InvalidXmlException("Could not parse XML", exception);          
+    }
   }
   
   @SuppressWarnings("rawtypes")
