@@ -51,8 +51,8 @@ docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 je
 SOAP 1.1 Request (`SOAPAction` is optional):
 ```sh
 http -v POST http://localhost:8080/ws \
-Content-Type:"text/xml"  \
-SOAPAction:"http://tempuri.org/Add" \     
+Content-Type:"text/xml" \
+SOAPAction:"http://tempuri.org/Add" \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
