@@ -44,7 +44,7 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.1
+docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.2
 ```
 
 ## Test
