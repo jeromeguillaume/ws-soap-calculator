@@ -26,7 +26,7 @@ Build the JAR file with:
 ``` 
 and then run the JAR file, as follows:
 ```sh
-java -jar target/ws.calculator-1.0.0.jar
+java -jar target/ws.calculator-1.0.2.jar
 ```
 
 ## Build and Run with Docker
