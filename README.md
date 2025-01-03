@@ -26,7 +26,7 @@ Build the JAR file with:
 ``` 
 and then run the JAR file, as follows:
 ```sh
-java -jar target/ws.calculator-1.0.2.jar
+java -jar target/ws.calculator-1.0.3.jar
 ```
 
 ## Build and Run with Docker
@@ -34,7 +34,7 @@ java -jar target/ws.calculator-1.0.2.jar
 ```sh
 cd ws-soap-calculator
 docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.2 --tag jeromeguillaume/ws-soap-calculator:latest .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.3 --tag jeromeguillaume/ws-soap-calculator:latest .
 ```
 
 ### Run the Docker image
@@ -44,12 +44,12 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.2
+docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
 ```
 
 ### Run the Docker image in the `kong-net` network
 ```sh
-docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.2
+docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
 ```
 
 ## Test
@@ -87,7 +87,7 @@ X-SOAP-Region: soap1
 SOAP 1.2 Request (`action` in `Content-Type` is optional):
 ```sh
 http POST http://localhost:8080/ws \
-Content-Type:'application/soap+xml;charset=utf-8;action="http://tempuri.org/Add"' \
+Content-Type:'application/soap+xml;charset=utf-8;action=http://tempuri.org/Add' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
   <soap12:Body>
@@ -122,7 +122,9 @@ Access to the WSDL: [http://localhost:8080/ws/calculator.wsdl](http://localhost:
   - Initial Release
 - v1.0.1:
   - Add `X-SOAP-Region` response HTTP header
-- v1.0.2:
+- v1.0.3:
   - Add SOAP 1.2 support
   - Check the `SOAPAction` request HTTP header (for SOAP 1.1)
   - Check the `action` request HTTP header, included in `Content-Type` (for SOAP 1.2)
+- v1.0.3:
+  - Remove double quotes to `action` (for SOAP 1.2)

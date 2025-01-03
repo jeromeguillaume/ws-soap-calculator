@@ -93,14 +93,9 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
             String [] contents = header.split(";");
             for (String content : contents){
                 if (content.contains ("action")){
-                    String [] action = content.split("=\"");
+                    String [] action = content.split("=");
                     if (action != null && action.length == 2){
                         soapAction = action[1];
-                        // Remove last "
-                        char lastCharacter = soapAction.charAt(soapAction.length() - 1);
-                        if (lastCharacter == '"') {
-                            soapAction = soapAction.substring(0, soapAction.length() - 1);
-                        }
                     break;
                     }
                 }
