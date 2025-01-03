@@ -5,15 +5,11 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.xml.namespace.QName;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointInterceptor;
 import org.springframework.ws.soap.SoapBody;
-import org.springframework.ws.soap.SoapEnvelope;
-import org.springframework.ws.soap.SoapFault;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 import org.springframework.ws.transport.context.TransportContextHolder;
@@ -25,13 +21,9 @@ import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPBodyElement;
 import jakarta.xml.soap.SOAPEnvelope;
 import jakarta.xml.soap.SOAPException;
-import jakarta.xml.soap.SOAPFault;
 import jakarta.xml.soap.SOAPHeader;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
-import jakarta.xml.soap.Detail;
-import jakarta.xml.soap.DetailEntry;
-import jakarta.xml.soap.MessageFactory;
 
 public class GlobalEndpointInterceptor implements EndpointInterceptor {
   
@@ -93,9 +85,14 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
             String [] contents = header.split(";");
             for (String content : contents){
                 if (content.contains ("action")){
-                    String [] action = content.split("=");
+                    String [] action = content.split("=\"");
                     if (action != null && action.length == 2){
                         soapAction = action[1];
+                        // Remove last "
+                        char lastCharacter = soapAction.charAt(soapAction.length() - 1);
+                        if (lastCharacter == '"') {
+                            soapAction = soapAction.substring(0, soapAction.length() - 1);
+                        }
                     break;
                     }
                 }

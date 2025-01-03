@@ -26,7 +26,6 @@ import jakarta.xml.soap.MimeHeaders;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
-import org.xml.sax.SAXParseException;
 
 public class DualProtocolSaajSoapMessageFactory implements SoapMessageFactory, InitializingBean {
 
