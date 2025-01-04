@@ -156,10 +156,8 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
             }
         }
         if (!soapActionChecked){
-            createCustomSoapFault(messageContext, "SOAP Action is not valid");
-            
+            createCustomSoapFault(messageContext, "SOAPAction is not valid - This value was sent: soapAction='" + soapAction + "'"); 
             return false;
-            //throw new Exception ("Invalid SOAP Action");
         }
     }
 
