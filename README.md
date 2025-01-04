@@ -26,7 +26,7 @@ Build the JAR file with:
 ``` 
 and then run the JAR file, as follows:
 ```sh
-java -jar target/ws.calculator-1.0.2.jar
+java -jar target/ws.calculator-1.0.3.jar
 ```
 
 ## Build and Run with Docker
@@ -34,7 +34,7 @@ java -jar target/ws.calculator-1.0.2.jar
 ```sh
 cd ws-soap-calculator
 docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.2 --tag jeromeguillaume/ws-soap-calculator:latest .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.3 --tag jeromeguillaume/ws-soap-calculator:latest .
 ```
 
 ### Run the Docker image
@@ -44,12 +44,12 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.2
+docker run -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
 ```
 
 ### Run the Docker image in the `kong-net` network
 ```sh
-docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.2
+docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
 ```
 
 ## Test
@@ -126,3 +126,5 @@ Access to the WSDL: [http://localhost:8080/ws/calculator.wsdl](http://localhost:
   - Add SOAP 1.2 support
   - Check the `SOAPAction` request HTTP header (for SOAP 1.1)
   - Check the `action` request HTTP header, included in `Content-Type` (for SOAP 1.2)
+- v1.0.3:
+  - `action`: support a value with (or without) quote or double quote (example: `action=http://tempuri.org/Add`, `action='http://tempuri.org/Add'` or `action="http://tempuri.org/Add"`)

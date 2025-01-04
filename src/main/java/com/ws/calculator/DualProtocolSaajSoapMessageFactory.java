@@ -20,6 +20,9 @@ import org.springframework.ws.soap.SoapVersion;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 import org.springframework.ws.soap.saaj.support.SaajUtils;
 import org.springframework.ws.transport.TransportInputStream;
+import org.springframework.ws.transport.context.TransportContext;
+import org.springframework.ws.transport.context.TransportContextHolder;
+import org.springframework.ws.transport.http.HttpServletConnection;
 
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.MimeHeaders;
@@ -99,6 +102,44 @@ public class DualProtocolSaajSoapMessageFactory implements SoapMessageFactory, I
         SOAPMessage saajMessage = null;
         // Content-Type = application/soap+xml
         if (mimeHeaders.getHeader(HttpHeaders.CONTENT_TYPE)[0].contains("application/soap+xml")){
+            // An 'action' value without double quote or single quote raises an 400 Error
+            // Example: Content-Type:'application/soap+xml;charset=utf-8;action=http://tempuri.org/Add'
+            //
+            // So, add double quote to 'action' (if present) included in the Content-Type and avoid 400 Error
+            // Example: Content-Type:'application/soap+xml;charset=utf-8;action="http://tempuri.org/Add"'
+            String header = mimeHeaders.getHeader(HttpHeaders.CONTENT_TYPE)[0];
+            String [] contents = header.split(";");
+            String charset = "";
+            String soapAction = null;
+            for (String content : contents){
+                if (content.contains ("action")){
+                    String [] action = content.split("=");
+                    if (action != null){
+                        if (action.length == 1){
+                            soapAction = "\"\"";
+                        }
+                        else if (action.length == 2){
+                            // Add a leading double quote (if there is no double quote or single quote)
+                            char lastCharacter = action[1].charAt(0);
+                            if (lastCharacter != '"' && lastCharacter != '\'') {
+                                soapAction = '"' + action[1];
+                                // Add a trailing double quote (if there is no double quote or single quote)
+                                lastCharacter = soapAction.charAt(soapAction.length() - 1);
+                                if (lastCharacter != '"' && lastCharacter != '\'') {
+                                    soapAction = soapAction + '"';
+                                }
+                            }
+                        }
+                        soapAction = "action=" + soapAction;
+                    }
+                }
+                else if (content.contains ("charset")) {
+                    charset = content + ";";
+                }
+            }
+            if (soapAction != null){
+                mimeHeaders.setHeader(HttpHeaders.CONTENT_TYPE, "application/soap+xml;" + charset + soapAction);
+            }
             saajMessage = messageFactory12.createMessage(mimeHeaders, inputStream);
             threadLocalValue.set(messageFactory12);
         }

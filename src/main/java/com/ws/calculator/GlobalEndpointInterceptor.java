@@ -44,8 +44,11 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
 }
   @Override
   public boolean handleRequest(MessageContext messageContext, Object o) throws Exception {
+    String soapAction11 = null;
+    String soapAction12 = null;
     String soapAction = null;
-    String header = "";
+    String headerContent = null;
+    String headerSOAPAction = null;
     Integer soapVersion = 0;
     var transportContext = TransportContextHolder.getTransportContext();
     if (transportContext != null) {
@@ -53,54 +56,85 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
         HttpServletConnection connection = (HttpServletConnection) transportContext.getConnection();
 
         if (connection != null) {
-            // Retrieve the HTTP servlet response
-            Iterator<String> headers = connection.getRequestHeaders(HttpHeaders.CONTENT_TYPE);
-            while (headers.hasNext())
+            // Retrieve the CONTENT_TYPE HTTP request
+            Iterator<String> headersContent = connection.getRequestHeaders(HttpHeaders.CONTENT_TYPE);
+            while (headersContent.hasNext())
             {
-                header = headers.next();
-                if (header.contains(MimeTypeUtils.TEXT_XML_VALUE)){
+                headerContent = headersContent.next();
+                if (headerContent.contains(MimeTypeUtils.TEXT_XML_VALUE)){
                     soapVersion = soap11;
                 }
-                else if (header.contains("application/soap+xml")){
+                else if (headerContent.contains("application/soap+xml")){
                     soapVersion = soap12;
                 }
                 else {
                     throw new Exception ("Invalid content-type");
                 }
             }
+
+            // Retrieve the 'SOAPAction' HTTP request
+            Iterator<String> headersSOAPAction = connection.getRequestHeaders("SOAPAction");
+            while (headersSOAPAction.hasNext())
+            {
+                headerSOAPAction = headersSOAPAction.next();
+                if (headerSOAPAction != null){
+                    soapAction11 = headerSOAPAction;
+                    break;
+                }
+            }
         }
     }
     if (messageContext.getRequest() instanceof SoapMessage) {
         
-        if (soapVersion == soap11)
-        {
-            SoapMessage soapMessage = (SoapMessage) messageContext.getRequest();
-            soapAction = soapMessage.getSoapAction();
-            
-            if (soapAction == null || soapAction == "\"\"") {
-                soapAction = null;
-            }
+        if (soapAction11 != null && soapAction11.equals("null")){
+            soapAction11 = null;
         }
-        else if (soapVersion == soap12){
-            String [] contents = header.split(";");
+        else if (soapAction11 == "\"\"") {
+            soapAction11 = "";
+        }
+        
+        if (headerContent != null){
+            String [] contents = headerContent.split(";");
             for (String content : contents){
                 if (content.contains ("action")){
-                    String [] action = content.split("=\"");
-                    if (action != null && action.length == 2){
-                        soapAction = action[1];
-                        // Remove last "
-                        char lastCharacter = soapAction.charAt(soapAction.length() - 1);
-                        if (lastCharacter == '"') {
-                            soapAction = soapAction.substring(0, soapAction.length() - 1);
+                    // Look for 'action'
+                    // Example: 
+                    //  action=http://tempuri.org/Add
+                    //  action='http://tempuri.org/Add'
+                    //  action="http://tempuri.org/Add"
+                    String [] action = content.split("=");
+                    if (action != null){
+                        if (action.length == 1){
+                            soapAction12 = "\"\"";
                         }
-                    break;
+                        else if (action.length == 2){
+                            soapAction12 = action[1];
+                            // Remove leading double quote or single quote
+                            char firstCharacter = soapAction12.charAt(0);
+                            if (firstCharacter == '"' || firstCharacter == '\'') {
+                                soapAction12 = soapAction12.substring(1, soapAction12.length());
+                            }
+                            // Remove leading double quote or single quote
+                            char lastCharacter = soapAction12.charAt(soapAction12.length() - 1);
+                            if (lastCharacter == '"' || lastCharacter == '\'') {
+                                soapAction12 = soapAction12.substring(0, soapAction12.length() - 1);
+                            }                            
+                        }
+                        break;
                     }
                 }
             }
         }
-        else{
-            throw new Exception ("Unable to detect the SOAP Version");
-        }
+    }
+
+    if (soapAction11 != null && soapVersion == soap12){
+        throw new Exception ("Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1");
+    }
+    else if (soapAction12 != null && soapVersion == soap11){
+        throw new Exception ("Found a SOAP 1.1 envelope and an 'action' field in the 'Content-Type' header linked with for SOAP 1.2");
+    }
+    else{
+        soapAction = (soapAction11 != null) ? soapAction11 : soapAction12;
     }
 
     if (soapAction != null){
