@@ -149,8 +149,14 @@ public class GlobalEndpointInterceptor implements EndpointInterceptor {
         Boolean soapActionChecked = false;
         while (it.hasNext() && !soapActionChecked) {
             Node node = it.next();
-            if ( node.getNodeName().equals(actionFromHeader) ){
+            if ( node.getNodeName().equals(actionFromHeader) ||
+                 (node.getNodeName() + "Request").equals(actionFromHeader)  ){
+                // WSDL 1.0/WSDL 2.0: example => http://tempuri.org/Subtract
                 if ( (CalculatorEndpoint.NAMESPACE_URI + node.getNodeName()).equals(soapAction)){
+                    soapActionChecked = true;
+                }
+                // Default Action Pattern for WSDL 2.0: example => http://tempuri.org/SubtractInterface/SubtractRequest
+                else if ( (CalculatorEndpoint.NAMESPACE_URI + node.getNodeName() + "Interface/" + node.getNodeName() + "Request").equals(soapAction)){
                     soapActionChecked = true;
                 }
             }

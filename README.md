@@ -26,7 +26,7 @@ Build the JAR file with:
 ``` 
 and then run the JAR file, as follows:
 ```sh
-java -jar target/ws.calculator-1.0.3.jar
+java -jar target/ws.calculator-1.0.4.jar
 ```
 
 ## Build and Run with Docker
@@ -34,7 +34,7 @@ java -jar target/ws.calculator-1.0.3.jar
 ```sh
 cd ws-soap-calculator
 docker buildx create --use --platform linux/amd64,linux/arm64 --name multi-platform-builder
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.3 --tag jeromeguillaume/ws-soap-calculator:latest .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag jeromeguillaume/ws-soap-calculator:1.0.4 --tag jeromeguillaume/ws-soap-calculator:latest .
 ```
 
 ### Run the Docker image
@@ -44,12 +44,12 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
+docker run -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.4
 ```
 
 ### Run the Docker image in the `kong-net` network
 ```sh
-docker run --network=kong-net -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.3
+docker run --network=kong-net -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.4
 ```
 
 ## Test
@@ -128,3 +128,5 @@ Access to the WSDL: [http://localhost:8080/ws/calculator.wsdl](http://localhost:
   - Check the `action` request HTTP header, included in `Content-Type` (for SOAP 1.2)
 - v1.0.3:
   - `action`: support a value with (or without) quote or double quote (example: `action=http://tempuri.org/Add`, `action='http://tempuri.org/Add'` or `action="http://tempuri.org/Add"`)
+- v1.0.4:
+  - `SOAPAction` / `action`: support for the [`Default Action Pattern for WSDL 2.0`](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20) (example of a `Default Action`: `http://tempuri.org/AddInterface/AddRequest`)
