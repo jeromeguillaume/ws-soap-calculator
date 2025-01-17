@@ -44,12 +44,12 @@ docker compose up --build
 or
 ---
 ```sh
-docker run -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.4
+docker run -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:latest
 ```
 
 ### Run the Docker image in the `kong-net` network
 ```sh
-docker run --network=kong-net -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:1.0.4
+docker run --network=kong-net -d --name ws-soap-calculator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator:latest
 ```
 
 ## Test
